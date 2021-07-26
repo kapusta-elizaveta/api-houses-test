@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using RestSharp;
@@ -11,6 +13,7 @@ using NUnit.Allure.Core;
 namespace HousesApiTest
 {
     [AllureNUnit]
+    [AllureDisplayIgnored]
     [AllureSuite("API")]
     [AllureSubSuite("Role Tests")]
     public class HousesTests
@@ -34,6 +37,12 @@ namespace HousesApiTest
             'cadetBranches': {'type': 'array'},
             'swornMembers': {'type':'array'}
         }");
+        
+        [OneTimeSetUp]
+        public void Init()
+        {
+            Environment.CurrentDirectory = Path.GetDirectoryName(GetType().Assembly.Location);
+        }
 
         [Test, Description("Checking houses json scheme")]
         public void Test_SortHouses()
@@ -41,7 +50,7 @@ namespace HousesApiTest
             //Creating Client connection
             RestClient client = new RestClient(BASE_URL);
             //Creating request to get data from server
-            RestRequest request = new RestRequest("houses",Method.GET);
+            RestRequest request = new RestRequest("houses", Method.GET);
            
             //Specify query string
             request.AddParameter("region", "Dorne");
