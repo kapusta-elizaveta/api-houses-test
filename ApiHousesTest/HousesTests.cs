@@ -15,7 +15,7 @@ namespace HousesApiTest
     [AllureNUnit]
     [AllureDisplayIgnored]
     [AllureSuite("API")]
-    [AllureSubSuite("Role Tests")]
+    [AllureSubSuite("House Tests")]
     public class HousesTests
     {
         private const string BASE_URL = "https://www.anapioficeandfire.com/api/";
@@ -37,6 +37,10 @@ namespace HousesApiTest
             'cadetBranches': {'type': 'array'},
             'swornMembers': {'type':'array'}
         }");
+
+        private RestRequest request;
+        private IRestResponse response;
+        private RestClient client;
         
         [OneTimeSetUp]
         public void Init()
@@ -45,12 +49,13 @@ namespace HousesApiTest
         }
 
         [Test, Description("Checking houses json scheme")]
+        [Order(1)]
         public void Test_SortHouses()
         {
             //Creating Client connection
-            RestClient client = new RestClient(BASE_URL);
+            client = new RestClient(BASE_URL);
             //Creating request to get data from server
-            RestRequest request = new RestRequest("houses", Method.GET);
+            request = new RestRequest("houses", Method.GET);
            
             //Specify query string
             request.AddParameter("region", "Dorne");
@@ -58,7 +63,7 @@ namespace HousesApiTest
             request.AddParameter("application/json; charset=utf-8", ParameterType.RequestBody);
             
             // Executing request to server and checking server response to the it
-            IRestResponse response = client.Execute(request);
+            response = client.Execute(request);
             var housesModel = JsonConvert.DeserializeObject<List<HousesModel>>(response.Content);
             
             //JSON validation against JSON schema
@@ -78,6 +83,18 @@ namespace HousesApiTest
                 Assert.That(response.ContentType, Is.EqualTo("application/json; charset=utf-8"), "ContentType isn't application/json");
                 Assert.AreNotEqual(response.StatusCode, HttpStatusCode.BadRequest, "HttpStatusCode isn't BadRequest");
             });
+        }
+
+        [Test, Description("Checking incorrect get method")]
+        [Order(2)]
+        public void Test_IncorrectMethod()
+        {
+            //Creating incorrect request to get data from server
+            request = new RestRequest("houseses", Method.GET);
+            //Executing request to server and checking server response to the it
+            response = client.Execute(request);
+            
+            Assert.AreEqual(response.StatusCode, HttpStatusCode.NotFound, "HttpStatusCode isn't NotFound");
         }
     }
 }
