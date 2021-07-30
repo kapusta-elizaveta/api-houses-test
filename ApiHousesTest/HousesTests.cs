@@ -16,9 +16,11 @@ namespace HousesApiTest
     [AllureDisplayIgnored]
     [AllureSuite("API")]
     [AllureSubSuite("House Tests")]
-    public class HousesTests
+    [TestFixture]
+    public class HousesTests : BaseTest
     {
         private const string BASE_URL = "https://www.anapioficeandfire.com/api/";
+        private List<HousesModel> housesModel;
         private JsonSchema schema = JsonSchema.Parse(
                 @"{
             'url': {'type':'string'},
@@ -42,12 +44,6 @@ namespace HousesApiTest
         private IRestResponse response;
         private RestClient client;
         
-        [OneTimeSetUp]
-        public void Init()
-        {
-            Environment.CurrentDirectory = Path.GetDirectoryName(GetType().Assembly.Location);
-        }
-
         [Test, Description("Checking houses json scheme")]
         [Order(1)]
         public void Test_SortHouses()
@@ -64,7 +60,7 @@ namespace HousesApiTest
             
             // Executing request to server and checking server response to the it
             response = client.Execute(request);
-            var housesModel = JsonConvert.DeserializeObject<List<HousesModel>>(response.Content);
+            housesModel = JsonConvert.DeserializeObject<List<HousesModel>>(response.Content);
             
             //JSON validation against JSON schema
             JArray jsonArray = JArray.Parse(response.Content);
@@ -84,9 +80,24 @@ namespace HousesApiTest
                 Assert.AreNotEqual(response.StatusCode, HttpStatusCode.BadRequest, "HttpStatusCode isn't BadRequest");
             });
         }
-
+        
         [Test, Description("Checking incorrect get method")]
         [Order(2)]
+        public void Test_EmptyResponce()
+        {
+            //Clear request parameters
+            request.Parameters.Clear();
+            request.AddParameter("region", "qwerty");
+            //Executing request to server and checking server response to the it
+            response = client.Execute(request);
+            housesModel = JsonConvert.DeserializeObject<List<HousesModel>>(response.Content);
+            
+            Assert.AreEqual("0", housesModel.Count.ToString());
+            //Assert.AreEqual(response.StatusCode, HttpStatusCode.NotFound, "HttpStatusCode isn't NotFound");
+        }
+
+        [Test, Description("Checking incorrect get method")]
+        [Order(3)]
         public void Test_IncorrectMethod()
         {
             //Creating incorrect request to get data from server
